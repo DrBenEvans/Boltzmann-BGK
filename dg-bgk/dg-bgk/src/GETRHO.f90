@@ -1,0 +1,61 @@
+      SUBROUTINE GETRH0(NELEM ,NPOIN , NNODE ,& 
+     &                  INTMA,GEOME ,DELUN ,RHS  ) 
+! 
+      REAL DELUN(NPOIN),RHS(NPOIN),GEOME(7,NELEM) 
+      REAL RHSEL(3),DELEL(3),MMAT(3,3) 
+! 
+      INTEGER INTMA(NNODE,NELEM),NODEN(9) 
+! 
+      DATA MMAT/  2.0 ,  1.0 ,  1.0 ,& 
+     &            1.0 ,  2.0 ,  1.0 ,& 
+     &            1.0 ,  1.0 ,  2.0 / 
+! 
+! *** SET RHS=0 
+! 
+      CALL RFILLV(RHS,NPOIN,0.0) 
+! 
+! *** LOOP OVER THE ELEMENTS 
+! 
+      DO 5000 IELEM=1,NELEM 
+! 
+! *** PICK UP THE VALUES NEEDED 
+! 
+      DO 1001 INODE=1,NNODE 
+      IN=INTMA(INODE,IELEM) 
+      NODEN(INODE)=IN 
+! 
+! *** JACOBIAN NEEDED 
+! 
+      RJAC=GEOME(7,IELEM) 
+! 
+! *** NODAL VALUES OF DELUN NEEDED 
+! 
+      DELEL(INODE)=DELUN(IN) 
+ 1001 CONTINUE 
+! 
+! *** OBTAIN THE ELEMENT CONTRIBUTION 
+! 
+      RJ=-RJAC/24. 
+! 
+      CALL RFILLV(RHSEL,3,0.0) 
+! 
+      DO 1000 IN=1,3 
+      DO 2000 JN=1,3 
+      CM=RJ*MMAT(IN,JN) 
+      RHSEL(IN)=RHSEL(IN)+CM*DELEL(JN) 
+ 2000 CONTINUE 
+ 1000 CONTINUE 
+! 
+! *** ADD TO THE RHS : 
+! 
+      DO 1020 INODE=1,NNODE 
+      IN=NODEN(INODE) 
+      RHS(IN)=RHS(IN)+RHSEL(INODE) 
+ 1020 CONTINUE 
+! 
+! *** END OF LOOP OVER THE ELEMENTS 
+! 
+ 5000 CONTINUE 
+! 
+      RETURN 
+      END 

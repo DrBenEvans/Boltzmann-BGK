@@ -1,0 +1,18 @@
+      SUBROUTINE ALOTIM2(NNODE,NELEM,MU,DTEb) 
+! 
+      INTEGER NELEM,NNODE 
+      REAL CSAFE,DTEb,maxMU
+      REAL MU(NNODE,NELEM) 
+      PARAMETER(CSAFE=0.9)
+!
+! *** COMPUT THE MAX ALLOWABLE TIMESTEP DUE TO THE BGK TERM 
+! 
+        maxMU=MAXVAL(MU)
+        IF(maxMU.GT.0.0)THEN
+        DTEb=CSAFE*(1/maxMU)
+        ELSE
+        DTEb=1000000
+        ENDIF
+!
+      RETURN 
+      END 

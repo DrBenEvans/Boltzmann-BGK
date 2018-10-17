@@ -1,0 +1,44 @@
+         SUBROUTINE CONMAT(NELEM ,NGEOM ,& 
+     &          GEOME, CMMAT) 
+! 
+      REAL GEOME(NGEOM,NELEM),CMMAT(3,3,NELEM) 
+! 
+! 
+! *** CALCULATES THE INVERSE CONSISTENT MASS MATRIX 
+! 
+        C24=1./24. 
+! 
+! *** SET MMAT TO ZERO 
+! 
+      CALL RFILLA(CMMAT,3,3,NELEM,0.0) 
+! 
+! *** LOOP OVER THE ELEMENTS 
+! 
+      DO 1000 IELEM=1,NELEM 
+! 
+! *** JACOBIAN OF THE ELEMENT 
+! 
+      RJ =GEOME(7,IELEM) 
+      RJ24=RJ*C24         !AREA DIVIDED BY 12 
+      RJ1=(1/RJ24) 
+      RJ11=0.75*RJ1 
+      RJ12=-0.25*RJ1 
+! 
+! *** ADD TO MMAT 
+! 
+      CMMAT(1,1,IELEM)=RJ11 
+      CMMAT(1,2,IELEM)=RJ12 
+      CMMAT(1,3,IELEM)=RJ12 
+      CMMAT(2,1,IELEM)=RJ12 
+      CMMAT(2,2,IELEM)=RJ11 
+      CMMAT(2,3,IELEM)=RJ12 
+      CMMAT(3,1,IELEM)=RJ12 
+      CMMAT(3,2,IELEM)=RJ12 
+      CMMAT(3,3,IELEM)=RJ11 
+! 
+! *** END OF LOOP OVER THE ELEMENTS 
+! 
+ 1000 CONTINUE 
+! 
+      RETURN 
+      END 

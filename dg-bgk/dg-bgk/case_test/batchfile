@@ -1,0 +1,20 @@
+#!/bin/bash --login
+###
+#SBATCH --job-name=BoltzmannTest
+#SBATCH --output=bench.out.%J
+#SBATCH --error=bench.err.%J
+#SBATCH --time=0-24:00
+#SBATCH --ntasks=8
+#SBATCH --mem-per-cpu=4000 
+#SBATCH --ntasks-per-node=8
+###
+
+cd /home/ben.evans/BoltzmannTestCase/
+
+#now run normal batch commands 
+module purge
+module load intel-license
+module load mpi/intel/2017/4
+module load compiler/intel/2017/4
+mpirun /home/ben.evans/codes/BGKcode2016/BGK < run.inp >& output
+

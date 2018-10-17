@@ -1,0 +1,257 @@
+###############################################
+### Things that might have gone wrong:  #######
+###############################################
+- Use of the MPI_COMM_WORLD communicator not changed to MPI_COMM_P when
+necessary (fixed a couple of occurrences of this already)
+
+- DISFN-like arrays not being indexed correctly
+
+- "RANK" appearing instead of MPI_RANK_P ( or MPI_RANK_V)
+
+- limits for MPI_RANK_P (MPI_SIZE_P includes the master or not? I think
+so but then MPI_SIZE_P == NGRPS+1).
+
+- DTE reductions on all ranks
+
+// compilation errors that really happened
+- Mess with NELEM and NELEM_PP
+- MPI_IERR not passed as an argument where it should.
+- "CALL" not used where it should
+- Some integer variables are declared after they are used in the declaration block 
+  in some subroutines (e.g. INTEGER VNPNT_PART,VSPACE_FIRST,VSPACE_LAST)
+- THEN should be on the same line of IF
+- Residual labels on DO. 
+- missing '&' (in routine declaration)
+- array accessed in the wrong way after reduction. [THIS MIGHT BE DANGEROUS]
+- parentheses missing in format description
+
+#############################
+### Things to clean up:  ####
+#############################
+- modifications to EDGFLX should be rationalized.
+
+
+#######################################################
+##  In the long process of fixing compilation errors ##
+#######################################################
+
+ADDVEC.f90: No problems.
+
+ADTHEM.f90: 
+  1. Mess with NELEM and NELEM_PP. 
+     Solved by changing all NELEM to NELEM_PP. TO CHECK
+
+
+ADVNCE.f90:
+  1. A commma on line 65
+  2. Parenthesis missing on line 198
+  3. missing "CALL" on line 233
+  4. missing "CALL" on line 394, and MPI_IERR not passed
+  5. VSPACE_FIRST and VSPACE_LAST types are declared after they are used.
+
+ALOTIM2.f90: No problems
+
+ALOTIM.f90: No problems
+
+BCASTP.f90: No problems
+
+BCASTV.f90: No problems
+
+CMMINC.f90:
+  1. VSPACE_FIRST and VSPACE_LAST types are declared after they are used.
+  2. Mess with NELEM and NELEM_PP
+
+COMPMU.f90:
+  1. VSPACE_FIRST and VSPACE_LAST types are declared after they are used.
+  2. THEN should be on the same line of IF (56)
+  3. CALL missing on MPI_ALLREDUCE (81) 
+  4. Residual label on DO (62)
+  5. MPI_IERR not declared 
+
+CONMAT.f90: No problems
+
+DG_lin_convec.f90: No problems
+
+EDGCOM.f90:
+  1. MPI_COMM_P NOT DECLARED and subroutine declaration does not contain parameter.
+     But the routine call in GETLOC contains the parameter already.
+
+EDGFLX.f90: NOTE: This subroutine should not be used.
+  1. A Parenthesis dangling (8)
+  2. VSPACE_FIRST and VSPACE_LAST types not declared.
+
+EDGFLXOPT.f90: No problems.
+
+ELNODE.f90: No problems.
+
+FLUCON2.f90: 
+  1. Missing CALL (149)
+  2. Mess between NELEM and NELEM_PP (changed all NELEM to NELEM_PP)
+
+GETAVR.f90: No problems
+  
+GETBOU.f90:
+  1. comma left there accidentally (30)
+
+GETELC.f90: No problems
+
+GETFLA.f90: No problems
+
+GETFLU.f90: No problems
+
+GETFOR.f90: No problems
+
+GETGEO.f90: No problems
+
+GETINC.f90:
+  1. VSPACE_FIRST and LAST type declared after usage
+  2. NELEM vs NELEM_PP - all moved to NELEM_PP
+
+GETINF.f90: No problems
+
+GETLEN.f90: No problems
+
+GETLOC.f90: No problems
+
+GETMAC.f90: No problems
+
+GETMAT.f90: No problems
+
+GETNOR.f90: No problems
+
+GETRES.f90:
+  1. missing '&' on line 1
+  2. missing 'CALL' on line 21
+  3. Missing type declarations:
+      INTEGER MPI_RANK_P,MPI_COMM_P,VSPACE_FIRST,VSPACE_LAST
+  
+GETRHO.f90: No problems
+
+GETROW.f90: No problems
+
+GETSID.f90: No problems
+
+GTEQNF.f90: 
+  1. Missing '&' on line 1
+
+GTINPT.f90: No problems
+
+IDENTA.f90: No problems
+
+IDENTM.f90: No problems
+
+IFILLA.f90: No problems
+
+IFILLM.f90: No problems
+
+IFILLV.f90: No problems
+
+INFLOW.f90:
+  1. NELEM vs NELEM_PP - all moved to NELEM_PP
+
+INICON2.f90: No problems
+ 
+INICON.f90: No problems
+
+MACROS.f90:
+  1. Missing 'CALL' on MPI_ALLREDUCEs (111-117)
+  2. VSPACE_FIRST and LAST type declared after usage
+  3. INTPG_ARR was not accessed at a particular position, giving the errors
+
+MACROS.f90(136): error #6366: The shapes of the array expressions do not conform.   [PS_PP]
+          PS_PP(IP)=PS_PP(IP)+MM*INTPG_ARR*AE
+----------^
+MACROS.f90(140): error #6366: The shapes of the array expressions do not conform.   [DISPS]
+          DISPS(IN,IE)=INTPG_ARR*MM
+----------^
+     Solved by accessing INTPG_ARR at position IDX (NOT IP). [ TO CHECK ]
+
+
+normal.f90: No problems
+
+OUTPUT.f90:
+  1. Missing 'CALL' (89,93,113,117)
+  2. VNPNT_PART type redeclared
+
+PTMESH.f90: No problems
+
+RFILLA.f90: No problems
+
+RFILLM.f90: No problems
+
+RFILLV.f90: No problems
+
+spectralBGK.f90: 
+  1. MPI_SIZE was not declared. Is it really necessary? Anyway, declared it.
+  2. Wrong format description (parentheses missing in format description)
+
+VSPACE.f90: No problems
+
+#############################################################
+##  RUNTIME ERRORS (solved as they are found on Ed's phi) ###
+#############################################################
+
+1. Misuse of MPI_COMM_SPLIT: it needs a MPI_COMM_RANK call afterwards 
+retrieve the rank. This has been corrected also in EDGFLXOPT.
+2. Issue in PTMESH: 
+
+Fatal error in MPI_Send: Invalid rank, error stack:
+MPI_Send(201): MPI_Send(buf=0x7ffdf84f38b0, count=1, MPI_INTEGER, dest=3, tag=100, comm=0x84000004) failed
+MPI_Send(118): Invalid rank has value 3 but must be nonnegative and less than 3
+
+Due to the fact that NPROC was passed to PTMESH instead of MPI_SIZE_P.
+
+3.  Issue in INICON2 leads to SEGFAULT. Notice this issue can be also in INICON. [TO CHECK]
+    WRONG NUMBER OF PARAMETER PASSED TO FUNCTION - MPI_RANK_P was passed twice.
+    (once as itself and once as replacement of MPI_RANK)
+
+4. An issue seemingly in COMPMU
+   FORTRAN INDEXING: IDX=3*IE+IN  instead of IDX=3*(IE-1)+IN 
+
+5. A modification made to EDGFLXOPT created an invalid communicator for the MPI_COMM_P master
+   which was not included in che MPI_COMM_SLAVES, and as such it could not get a rank number.
+   So the MPI_COMM_RANK call on the master was failing.
+
+6. SEGFAULT in INFLOW - the wrong number of arguments was passed to subroutine.
+   (VSPACE_FIRST and VSPACE_LAST were missing).
+
+7. SEGFAULT in GETRES - likely due to MPI_REDUCE called on RESIDUAL_PP and RESIDUAL instead of the
+    right portions - RESIDUAL_PP(VSPACE_FIRST:VSPACE_LAST) and RESIDUAL(VSPACE_FIRST:VSPACE_LAST)
+    UPDATE:
+    NO! THE PROBLEM WAS ONLY RELATED TO MISSING MPI_IERR ARGUMENT.
+    Anyway the fix above solved the problem on Ed's phi, but not on the HPCWALES cluster.
+    [TO CHECK] 
+
+8. Invalid communicator in MACROS - Due to bad argument passing 
+   (a RANK was passed where it should not have)
+
+9. in ADVNCE, RANK was used without being defined (issue found only with -C and make clean)
+
+10. In OUTPUT, NEGRP was not initialised correctly on slaves and caused issues. 
+    This was actually an error in PTMESH - only NGRPS-1 instead of NGRPS elements were broadcasted.
+
+11. In OUTPUT there seems to be a problem with MPI send and RECV of DISNF_PP. Likely the problem is the 
+    shape/limits of the data to send or receive. See issue "SEGFAULT in GETRES".
+    UPDATE:
+    NO! THE PROBLEM WAS ONLY RELATED TO MISSING MPI_IERR ARGUMENT IN MPI_RECV.
+
+
+################################################
+## Runtime errors on HPCWALES  #################
+################################################
+
+1. MPI_ERR was missing in MPI_REDUCE in GETRES. 
+
+################################################
+##  OTHER ERRORS  ##############################
+################################################
+
+1. in MACROS the pressure was not computed correctly. 
+The pressure was computed using the arrays DISND,
+DISUX and DISUY but these were not filled with the right values.
+Also, these arrays are also outputs of the subroutine - they were not computed
+correctly.
+
+2. It seems that, even in the original code, the results obtained by two different partitions 
+were not consistent with each other. The results seem different (up to 4%, in general a lot less)
+ where two partitions join and close to the edge of the mesh where the object is located. 

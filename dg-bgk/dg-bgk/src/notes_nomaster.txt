@@ -1,0 +1,100 @@
+######################################################################
+## General principles to use in getting rid of master-slave pattern ##
+######################################################################
+
+1. Each array of the kind *_PP is duplicated on the master, with a *_PP_CP
+allocated (and deallocated when necessary).
+2. IG = 1 is the new master.
+3. In MPI calls, all ranks must be now IG-1 instead of IG. Broadcast from 
+master are still from rank 0.
+4. now MPI_SIZE_P is the number of partitions. NGRPS = MPI_SIZE_P and not 
+MPI_SIZE_P-1 anymore.
+
+########################################################
+# list of arrays and variables that got the treatment  #
+#           *_PP -> *_PP, *_PP_CP                      #
+########################################################
+
+# in GETLOC.f90
+INTEGER NPOIN_PP_CP,NBOUN_PP_CP,NCOMM_PP_CP
+INTEGER,ALLOCATABLE :: INTMA_PP_CP(:,:),IPCOM_PP_CP(:)
+INTEGER,ALLOCATABLE :: COORD_PP_CP(:,:),BSIDO_PP_CP(:,:)
+INTEGER,ALLOCATABLE :: RSIDO_PP_CP(:,:)
+INTEGER,ALLOCATABLE :: GEOME_PP_CP(:,:),MMAT_PP_CP(:,:)
+INTEGER,ALLOCATABLE :: CMMAT_PP_CP(:,:,:)
+INTEGER,ALLOCATABLE :: ISIDE_PP_CP(:,:),NX_PP_CP(:),NY_PP_CP(:,:)
+INTEGER,ALLOCATABLE :: EL_PP_CP(:,:),ISCOM_PP_CP(:,:)
+INTEGER,ALLOCATABLE :: LCOM_PP_CP(:,:)
+
+#######################################################
+# notes ###############################################
+#######################################################
+
+- PTMESH
+
+- GETLOC
+    a lot of places where the master-slave pattern was used.
+    
+- EDGCOM 
+    no real master-slave patter is used. only to shift shift rank numbers
+    to match partition numbers.
+
+- INICON2 (and INICON)
+    Only used broadcasts. code is invariant, except that we need to 
+    remove the IF(MPI_RANK_P.NE.0) in a place only.
+   
+- ADVNCE
+   removing MPI_COMM_SLAVES and the like 
+   removing the IF(MPI_RANK_P.NE.0) in several place.
+
+- EDGFLXOPT 
+   MPI_COMM_SLAVES -> MPI_COMM_P
+   SLAVERANK removed (was not used)
+
+- GETMAC
+   temporary arrays *_PP_CP had to be allocated on master in order to 
+   separate between the arrays received from the other ranks and the array
+   owned by the master itself.
+
+- GTEQNF 
+   nothing to do, rank is useless, removed
+
+###################################
+# Runtime errors found on the phi #
+###################################
+
+- Still MPI_SIZE_P-1 was present in many places in the code
+- Some of the new arrays *_PP_CP were declared as INTEGERS instead of REAL
+- MPI_Recv called on the master when the max DTE was to be determined. Unnecessary.
+
+On 2 processes:
+- issues in GETLOC. Probably error in the way ELGRP(1,i) is set up (+-1 on rank).
+  - ACTUALLY NO: the problem was that ELGRP was not initialized correctly. It was initialized
+  in PTMESH up to index NELEM_PP even for the part of the second partition while it must be 
+  initialized for NELEM_PP_CP element per partition (NELEM_PP is now only referred to the
+  rank 0 which is doing all the work in initialization.
+  - Deadlocks caused by tag misalignment (tag = MPI_RANK_P*10 instead of (MPI_RANK_P+1)*10)
+    This issue was present in some places. Also, I got confused between sends - IPCOM_PP is
+    sent many times from slaves to master, and a deadlock was present because I didn't
+    understand the correct match between sends from the ranks and receives on the master.
+  - *_PP_CP arrays deallocated after first iteration of the cycles, but needed also on the
+    other iterations.
+    the right 
+  - IPCOM_PP was used on the master in several places where IPCOM_PP_CP would have been the 
+    right choice.
+  - copying arrays must be done specifying the portion, otherwise also the borders of the 
+    array will be modified. (*this must actually be checked if it's a problem or not)
+
+
+
+- issues in GETMAC:
+  - NPOIN_PP was used instead of NPOIN_PP_CP.
+  - An IF statement was missing - sends must not be performed if on the master rank/partition 1
+  - a MPI_RANK_P.EQ.IG instead of (MPI_RANK_P+1).EG.IG was present
+  - copying arrays must be done specifying the portion, otherwise also the borders of the 
+    array will be modified. (*this must actually be checked if it's a problem or not)
+
+- issues in FLUCON2
+  - It seems that an edge is not found. The problem actually lied in the assignments in GETLOC.
+
+

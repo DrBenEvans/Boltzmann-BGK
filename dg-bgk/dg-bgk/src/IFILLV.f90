@@ -1,0 +1,7 @@
+      SUBROUTINE IFILLV(LV,NL,IV) 
+      INTEGER LV(NL) 
+      DO 1000 I=1,NL 
+      LV(I)=IV 
+ 1000 CONTINUE 
+      RETURN 
+      END 

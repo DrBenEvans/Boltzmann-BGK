@@ -1,0 +1,16 @@
+#!/bin/bash --login
+###
+#SBATCH --job-name=16_10
+#SBATCH --output=bench.out.%J
+#SBATCH --error=bench.err.%J
+#SBATCH --time=15
+#SBATCH --ntasks=160
+#SBATCH --nodes=10
+#SBATCH --ntasks-per-node=16
+###
+#now run normal batch commands 
+module purge
+module load intel-license
+module load mpi/intel/2017/4
+module load compiler/intel/2017/4
+mpirun ./BGK < run.inp >& output

@@ -1,0 +1,54 @@
+      SUBROUTINE GETGEO(NELEM ,NPOIN ,NNODE ,NDIMN ,NGEOM ,INTMA ,& 
+     &                  COORD ,GEOME) 
+! 
+      REAL COORD(NDIMN,NPOIN) 
+      REAL GEOME(NGEOM,NELEM) 
+      REAL X(3),Y(3),NXI(3),NET(3) 
+      REAL RJ1,Y31,X31,Y21,X21,RJ,XIX,XIY,ETX,ETY 
+! 
+      INTEGER INTMA(NNODE,NELEM) 
+! *** INITIAL VALUES GIVEN TO THE VARIABLES NXI AND NET 
+      DATA  NXI/-1.0 , 1.0 , 0.0 / 
+      DATA  NET/-1.0 , 0.0 , 1.0 / 
+! 
+! *** THIS SUB EVALUATES N,X & N,Y FOR EACH ELEMENT (LINEAR TRIANGLES) 
+!     AND THE JACOBIAN (=2*AREA) 
+! 
+      DO 1000 IELEM=1,NELEM 
+! 
+      DO 1001 INODE=1,NNODE 
+      IN=INTMA(INODE,IELEM) 
+      X(INODE)=COORD(1,IN) 
+      Y(INODE)=COORD(2,IN) 
+ 1001 CONTINUE 
+! 
+      X21=X(2)-X(1) 
+      X31=X(3)-X(1) 
+      Y21=Y(2)-Y(1)   
+      Y31=Y(3)-Y(1) 
+! 
+      RJ =X21*Y31-X31*Y21 
+      RJ1=1./RJ 
+! 
+      XIX= Y31*RJ1 
+      XIY=-X31*RJ1 
+      ETX=-Y21*RJ1 
+      ETY= X21*RJ1 
+! 
+! *** FORM N,X & N,Y 
+! 
+      DO 1002 IN=1,3 
+      RNXI=NXI(IN) 
+      RNET=NET(IN) 
+      GEOME(IN  ,IELEM)=XIX*RNXI+ETX*RNET 
+      GEOME(IN+3,IELEM)=XIY*RNXI+ETY*RNET 
+ 1002 CONTINUE 
+! 
+! *** JACOBIAN 
+! 
+      GEOME(7,IELEM)=RJ 
+      IF(RJ.LT.0000.) PRINT *,ielem 
+! 
+ 1000 CONTINUE 
+      RETURN 
+      END 
