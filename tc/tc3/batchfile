@@ -1,0 +1,19 @@
+#!/bin/bash --login
+###
+#SBATCH --job-name=BoltzmannNanoparticle
+#SBATCH --output=bench.out.%J
+#SBATCH --error=bench.err.%J
+#SBATCH --time=0-24:00
+#SBATCH --ntasks=30
+#SBATCH --mem-per-cpu=4000 
+#SBATCH --ntasks-per-node=40
+###
+
+cd /home/s.engevabj/Boltzmann_cases/test_case3/
+
+#now run normal batch commands 
+module load hpcw
+module load intel-license
+module load mpi/intel/2018/4
+mpirun /home/s.engevabj/codes/BGKcode2018/BGK < run.inp >& output
+
